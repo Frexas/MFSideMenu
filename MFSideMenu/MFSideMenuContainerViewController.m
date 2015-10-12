@@ -18,7 +18,6 @@ typedef enum {
 } MFSideMenuPanDirection;
 
 @interface MFSideMenuContainerViewController ()
-@property (nonatomic, strong) UIView *menuContainerView;
 
 @property (nonatomic, assign) CGPoint panGestureOrigin;
 @property (nonatomic, assign) CGFloat panGestureVelocity;
@@ -158,7 +157,7 @@ typedef enum {
 #pragma mark -
 #pragma mark - UIViewController Rotation
 
--(NSUInteger)supportedInterfaceOrientations {
+- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
     if (self.centerViewController) {
         if ([self.centerViewController isKindOfClass:[UINavigationController class]]) {
             return [((UINavigationController *)self.centerViewController).topViewController supportedInterfaceOrientations];
@@ -531,11 +530,27 @@ typedef enum {
        self.menuState != MFSideMenuStateClosed) return YES;
     
     if([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
-        if([gestureRecognizer.view isEqual:[self.centerViewController view]])
-            return [self centerViewControllerPanEnabled];
+        if([gestureRecognizer.view isEqual:[self.centerViewController view]]) {
+            if ([self.centerViewController isKindOfClass:[UINavigationController class]]) {
+                UINavigationController *navigationController = (UINavigationController *)self.centerViewController;
+                if (navigationController.viewControllers.count > 1 && navigationController.interactivePopGestureRecognizer.enabled) {
+                    return NO;
+                }
+            }
+            if (self.menuState == MFSideMenuStateLeftMenuOpen) {
+                return [self centerViewControllerPanEnabled];
+            } else {
+                CGPoint point = [touch locationInView:gestureRecognizer.view];
+                if ((point.x < 40.0) || (point.x > (self.view.bounds.size.width - 40.0))) {
+                    return YES;
+                } else {
+                    return NO;
+                }
+            }
+        }
         
         if([gestureRecognizer.view isEqual:self.menuContainerView])
-           return [self sideMenuPanEnabled];
+            return [self sideMenuPanEnabled];
         
         // pan gesture is attached to a custom view
         return YES;
@@ -545,6 +560,9 @@ typedef enum {
 }
 
 - (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer *)gestureRecognizer {
+    if ([self.centerViewController viewControllers].count > 1) {
+        return  NO;
+    }
     if ([gestureRecognizer isKindOfClass:[UIPanGestureRecognizer class]]) {
         CGPoint velocity = [(UIPanGestureRecognizer *)gestureRecognizer velocityInView:gestureRecognizer.view];
         BOOL isHorizontalPanning = fabs(velocity.x) > fabs(velocity.y);
@@ -555,7 +573,10 @@ typedef enum {
 
 - (BOOL)gestureRecognizer:(UIGestureRecognizer *)gestureRecognizer
 shouldRecognizeSimultaneouslyWithGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer {
-	return NO;
+    if (self.menuState == MFSideMenuStateRightMenuOpen) {
+        return YES;
+    }
+    return NO;
 }
 
 
