@@ -14,7 +14,7 @@
 #pragma mark - UITableViewDataSource
 
 - (NSString *)tableView:(UITableView *)tableView titleForHeaderInSection:(NSInteger)section {
-    return [NSString stringWithFormat:@"Section %d", section];
+    return [NSString stringWithFormat:@"Section %ld", (long)section];
 }
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView {
@@ -34,7 +34,7 @@
         cell.accessoryType = UITableViewCellAccessoryDisclosureIndicator;
     }
     
-    cell.textLabel.text = [NSString stringWithFormat:@"Item %d", indexPath.row];
+    cell.textLabel.text = [NSString stringWithFormat:@"Item %ld", (long)indexPath.row];
     
     return cell;
 }
@@ -44,7 +44,7 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
     DemoViewController *demoViewController = [self.storyboard instantiateViewControllerWithIdentifier:@"DemoViewController"];
-    demoViewController.title = [NSString stringWithFormat:@"Demo #%d-%d", indexPath.section, indexPath.row];
+    demoViewController.title = [NSString stringWithFormat:@"Demo #%ld-%ld", (long)indexPath.section, (long)indexPath.row];
     
     UINavigationController *navigationController = self.menuContainerViewController.centerViewController;
     NSArray *controllers = [NSArray arrayWithObject:demoViewController];
